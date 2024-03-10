@@ -1,0 +1,28 @@
+DELIMITER //
+
+CREATE FUNCTION registrarUsuario(
+    p_nombre VARCHAR(50),
+    p_apellido VARCHAR(50),
+    p_correo VARCHAR(100),
+    p_contrasena VARCHAR(100)
+)
+RETURNS INT
+BEGIN
+    DECLARE usuario_id INT;
+    
+    -- Verificar si el correo ya está registrado
+    IF EXISTS (SELECT * FROM usuarios WHERE correo = p_correo) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El correo ya está registrado';
+    ELSE
+        -- Insertar el nuevo usuario en la tabla
+        INSERT INTO usuarios (nombre, apellido, correo, contrasena)
+        VALUES (p_nombre, p_apellido, p_correo, p_contrasena);
+        
+        -- Obtener el ID del usuario recién insertado
+        SELECT LAST_INSERT_ID() INTO usuario_id;
+    END IF;
+    
+    RETURN usuario_id;
+END //
+
+DELIMITER ;
